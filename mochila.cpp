@@ -1,69 +1,137 @@
 #include <iostream> 
-#include <algorithm> 
-#include <vector> 
-
+#include <algorithm>
+#include <vector>
+  
 using namespace std; 
   
-  
-struct job{
-    int satisfaction_level; //can be 1, 2 or 3 , 0 = undeclared
-    int time; 
-    int waiting_time;
-
-    job(int tim, int wait, int sat){
-        time = tim;
-        waiting_time = wait;
-        satisfaction_level = sat;
-    }
-};
-
-int getSatisfactionLevel(int waiting_time, int time){
-    if(time*2>waiting_time){
-        return 1;
-    }else if(time*3<waiting_time){
-        return 2;
-    }else{
-        return 3;
-    }
-}
-
-vector<job> executeJobs(vector<int> to_execute) 
+struct ObjectInBackpack
 { 
-    int total_time = 0;
-    vector<job> solution;
-    
-    sort(to_execute.begin(), to_execute.end());
-
-    for(int i=0; i<to_execute.size(); i++){
-        solution.push_back( job(to_execute.at(i), total_time,  getSatisfactionLevel(total_time, to_execute.at(i))));
-
-        total_time += to_execute.at(i);
-
-        
-    }
-    return solution;
+    int benefit;
+    double weight; 
   
+    ObjectInBackpack(int ben, double weig){
+        benefit = ben;
+        weight = weig;
+    }
+}; 
+  
+bool compare(struct ObjectInBackpack a, struct ObjectInBackpack b) 
+{ 
+    double ratio_a = (double) a.benefit / a.weight; 
+    double ratio_b = (double) b.benefit / b.weight; 
+    if(ratio_a>ratio_b){
+        return true;
+    }else{
+        return false;
+    }
+} 
+  
+vector<double> mochilaEnteros(int M, struct ObjectInBackpack elements[], int size) 
+{ 
+    vector<double> solution;
+    sort(elements, elements + size, compare); 
+
+    cout<<" ORDENADO POR RATIO "<<endl;
+
+    for (int i = 0; i < size; i++) 
+    { 
+        cout << elements[i].benefit << "  " << elements[i].weight << " ratio benefit/weight" << ((double)elements[i].benefit / elements[i].weight) << endl; 
+    } 
+   
+  
+    int current_weight = 0;  
+  
+    for (int i = 0; i < size; i++) 
+    { 
+        if (current_weight + elements[i].weight <= M) 
+        { 
+            solution.push_back(1);
+            current_weight+=elements[i].weight;
+            
+        } 
+  
+        else 
+        { 
+            solution.push_back(0);
+            break; 
+        } 
+        
+        
+    } 
+    cout<<" TOTAL BACKPACK'S WEIGHT "<<current_weight<<endl;
+    cout<<" OF TOTAL CAPACITY  "<<M<<endl;
+  
+    return solution;
 } 
 
+vector<double> mochilaFraccion(int M, struct ObjectInBackpack elements[], int size) 
+{ 
+    vector<double> solution;
+    sort(elements, elements + size, compare); 
   
-void printJobs(vector<job> to_print){
-    for(int i=0; i<to_print.size(); i++){
-        cout<<" trabajo no "<<i<<endl;
-        cout<<" tiempo de ejecución "<<to_print.at(i).time<<endl;
-        cout<<" tiempo de espera "<<to_print.at(i).waiting_time<<endl;
-        cout<<" nivel de satisfacción "<<to_print.at(i).satisfaction_level<<endl;
-        cout<<endl;
+ 
+    for (int i = 0; i < size; i++) 
+    { 
+        cout << elements[i].benefit << " / " << elements[i].weight << " ratio benefit/weight: " << ((double)elements[i].benefit / elements[i].weight) << endl; 
+    } 
+   
+  
+    int current_weight = 0;  
+  
+    for (int i = 0; i < size; i++) 
+    { 
+        if (current_weight + elements[i].weight <= M) 
+        { 
+            solution.push_back(1);
+            current_weight+=elements[i].weight;
+            
+        } 
+  
+        else 
+        { 
+            double fraction = (double)(M-current_weight)/elements[i].weight;
+            solution.push_back(fraction);
+            current_weight+=fraction*elements[i].weight;
+            break; 
+        } 
+        
+        
+    } 
+    cout<<" TOTAL BACKPACK'S WEIGHT "<<current_weight<<endl;
+    cout<<" OF TOTAL CAPACITY  "<<M<<endl;
+  
+    return solution;
+} 
+
+
+void printVector(vector<double> solution, struct ObjectInBackpack elements[]){
+    for(int i=0; i<solution.size(); i++){
+        cout<<solution.at(i)<<endl;
+        cout<<" weight "<<elements[i].weight<<endl;
+        cout<<" benefit "<<elements[i].benefit<<endl;
     }
 }
-
-int main(int argc, const char* argv[]) 
+  
+int main() 
 { 
-    vector<int> to_do; 
-    to_do.push_back(5);
-    to_do.push_back(4);
-    to_do.push_back(10);
-    to_do.push_back(2);
-    vector<job> solution = executeJobs(to_do);
-    printJobs(solution);
-    return 0; 
+    double total_capacity = 70;   
+    ObjectInBackpack *element_a = new ObjectInBackpack(60, 10.0);
+    ObjectInBackpack *element_b = new ObjectInBackpack(100, 20.0);
+    ObjectInBackpack *element_c = new ObjectInBackpack(120, 30.0);
+    ObjectInBackpack *element_d = new ObjectInBackpack(60, 30.0);
+
+    ObjectInBackpack elements[] = {*element_a, *element_b, *element_c, *element_d}; 
+    int size = sizeof(elements) / sizeof(elements[0]); 
+
+  
+    cout<<" MOCHILA CON FRACCIONES "<<endl;
+    vector<double> solution = mochilaFraccion(total_capacity, elements, size); 
+    printVector(solution, elements);
+
+    cout<<endl;
+    cout<<" MOCHILA CON ENTEROS "<<endl;
+    solution = mochilaEnteros(total_capacity, elements, size); 
+    printVector(solution, elements);
+    return 0;
+   
 } 
