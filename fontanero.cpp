@@ -17,14 +17,6 @@ struct job{
     }
 };
 
-  
-bool compare(job a, job b) 
-{ 
-    int a_time = a.time;
-    int b_time = b.time;
-    return (a_time>b_time); 
-} 
-
 int getSatisfactionLevel(int waiting_time, int time){
     if(time*2>waiting_time){
         return 1;
